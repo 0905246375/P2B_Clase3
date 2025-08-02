@@ -1,0 +1,22 @@
+MEJORA #7
+Agregar una opción para mostrar un resumen de inventario
+Pista: Implementa un método que liste productos, stock y ventas 
+UBICACIÓN:
+Clase de inventario Service
+DESCRIPCIÓN DEL CAMBIO:
+Se creó una nueva función llamada resumen de inventario, el cual  se implementó un form que muestra cada dato de inventario como son ID, nombre el precio y el stock 
+JUSTIFICACIÓN:
+Esta mejora transforma una simple lista de inventario en una herramienta de gestión útil 
+
+
+
+MEJORA #8
+Solicita confirmación antes de eliminar un producto
+Pista: Antes de borrar, pide al usuario que confirme la acción.
+UBICACIÓN: 
+Clase de un inventario Service 
+DESCRIPCIÓN DEL CAMBIO:
+Se creó un método eliminarProductoConConfirmacion(), que añade un paso de seguridad antes de borrar un producto del inventario 
+JUSTIFICACIÓN:
+La eliminación de datos es una acción irreversible que puede llevar a errores costosos si se realiza por accidente.
+
