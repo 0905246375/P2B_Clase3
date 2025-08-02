@@ -6,28 +6,42 @@ import com.negocio.models.Producto;
 import com.negocio.services.InventarioService;
 import com.negocio.services.PedidoService;
 import com.negocio.db.DatabaseManager;
+// Agrega estos imports al inicio de tu archivo
+import java.util.ArrayList;
+import java.util.List;
 
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
+    private static List<Pedido> pedidos = new ArrayList<>();
+    private static Scanner scanner = new Scanner(System.in);
+
     private static InventarioService inventarioService;
     private static PedidoService pedidoService;
-    private static Scanner scanner;
+
+
 
     public static void main(String[] args) {
         System.out.println("=== FOODNET - Simulador de Negocio de Comida Rápida ===");
 
-        // Inicializar servicios
         inventarioService = new InventarioService();
         pedidoService = new PedidoService(inventarioService);
         scanner = new Scanner(System.in);
 
-        // Menú principal
         boolean continuar = true;
         while (continuar) {
             mostrarMenu();
-            int opcion = scanner.nextInt();
-            scanner.nextLine(); // Limpiar buffer
+
+            int opcion = 0;
+            try {
+                opcion = scanner.nextInt();
+                scanner.nextLine(); // limpiar buffer
+            } catch (InputMismatchException e) {
+                System.out.println("Debe ingresar un número válido.");
+                scanner.nextLine();
+                continue;
+            }
 
             switch (opcion) {
                 case 1:
@@ -51,6 +65,12 @@ public class Main {
                 case 7:
                     continuar = false;
                     break;
+                case 8:
+                    System.out.print("Ingrese el ID del producto a eliminar: ");
+                    int idEliminar = scanner.nextInt();
+                    scanner.nextLine(); // Limpiar buffer
+                    inventarioService.eliminarProductoPorId(idEliminar);
+                    break;
                 default:
                     System.out.println("Opción inválida");
             }
@@ -70,6 +90,7 @@ public class Main {
         System.out.println("5. Ver ingresos totales");
         System.out.println("6. Aplicar descuento a pedido");
         System.out.println("7. Salir");
+        System.out.println("8 Eliminar producto ");
         System.out.print("Seleccione una opción: ");
     }
 
@@ -93,17 +114,27 @@ public class Main {
     }
 
     private static void agregarProductoAPedido() {
-        System.out.print("ID del pedido: ");
-        int pedidoId = scanner.nextInt();
-        System.out.print("ID del producto: ");
-        int productoId = scanner.nextInt();
-        System.out.print("Cantidad: ");
-        int cantidad = scanner.nextInt();
+        try {
+            System.out.print("ID del pedido: ");
+            int pedidoId = scanner.nextInt();
+            scanner.nextLine();
 
-        if (pedidoService.agregarProductoAPedido(pedidoId, productoId, cantidad)) {
-            System.out.println("Producto agregado exitosamente");
-        } else {
-            System.out.println("Error al agregar producto");
+            System.out.print("ID del producto: ");
+            int productoId = scanner.nextInt();
+            scanner.nextLine();
+
+            System.out.print("Cantidad: ");
+            int cantidad = scanner.nextInt();
+            scanner.nextLine();
+
+            if (pedidoService.agregarProductoAPedido(pedidoId, productoId, cantidad)) {
+                System.out.println("Producto agregado exitosamente");
+            } else {
+                System.out.println("Error al agregar producto");
+            }
+        } catch (InputMismatchException e) {
+            System.out.println("Entrada inválida. Intente nuevamente.");
+            scanner.nextLine();
         }
     }
 
@@ -118,12 +149,81 @@ public class Main {
     }
 
     private static void aplicarDescuentoAPedido() {
-        System.out.print("ID del pedido: ");
-        int pedidoId = scanner.nextInt();
-        System.out.print("Porcentaje de descuento: ");
-        double descuento = scanner.nextDouble();
+        try {
+            // Mostrar lista de pedidos existentes
+            System.out.println("\n=== APLICAR DESCUENTO ===");
+            System.out.println("Pedidos registrados:");
+            if (pedidos.isEmpty()) {
+                System.out.println("No hay pedidos registrados.");
+                return;
+            }
 
-        // Buscar pedido y aplicar descuento (simplificado para el ejemplo)
-        System.out.println("Función de descuento en desarrollo...");
+            for (Pedido pedido : pedidos) {
+                System.out.printf("ID: %d - Cliente: %s - Total: Q%,.2f%n",
+                        pedido.getId(),
+                        pedido.getCliente().getNombre(),
+                        pedido.getTotal());
+            }
+
+            // Solicitar ID del pedido
+            System.out.print("\nIngrese el ID del pedido: ");
+            int pedidoId = scanner.nextInt();
+            scanner.nextLine();
+
+            // Buscar pedido
+            Pedido pedido = null;
+            for (Pedido p : pedidos) {
+                if (p.getId() == pedidoId) {
+                    pedido = p;
+                    break;
+                }
+            }
+
+            if (pedido == null) {
+                System.out.println("No se encontró un pedido con ese ID.");
+                return;
+            }
+
+            // Mostrar detalles del pedido
+            System.out.println("\nDetalles del pedido:");
+            System.out.println("Cliente: " + pedido.getCliente().getNombre());
+            System.out.println("Productos:");
+            for (Producto producto : pedido.getProductos()) {
+                System.out.printf("- %s (Q%,.2f x %d)%n",
+                        producto.getNombre(),
+                        producto.getPrecio(),
+                        producto.getCantidad());
+            }
+            System.out.printf("Total actual: Q%,.2f%n", pedido.getTotal());
+
+            // Solicitar y validar descuento
+            double descuento;
+            do {
+                System.out.print("\nIngrese el porcentaje de descuento (0-100%): ");
+                descuento = scanner.nextDouble();
+                scanner.nextLine();
+
+                if (descuento < 0 || descuento > 100) {
+                    System.out.println("El descuento debe estar entre 0% y 100%");
+                }
+            } while (descuento < 0 || descuento > 100);
+
+            // Aplicar descuento
+            double totalAnterior = pedido.getTotal();
+            pedido.aplicarDescuento(descuento);
+
+            // Mostrar resultados
+            System.out.println("\nDescuento aplicado exitosamente:");
+            System.out.printf("Total anterior: Q%,.2f%n", totalAnterior);
+            System.out.printf("Descuento aplicado: %.2f%%%n", descuento);
+            System.out.printf("Nuevo total: Q%,.2f%n", pedido.getTotal());
+
+        } catch (InputMismatchException e) {
+            System.out.println("Error: Debe ingresar valores numéricos válidos.");
+            scanner.nextLine();
+        } catch (Exception e) {
+            System.out.println("Ocurrió un error inesperado: " + e.getMessage());
+        }
+
     }
 }

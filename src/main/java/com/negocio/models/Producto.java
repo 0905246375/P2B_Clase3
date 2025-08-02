@@ -1,37 +1,64 @@
 package com.negocio.models;
 
-// ERROR 1: Atributos públicos (Mala práctica de encapsulamiento)
 public class Producto {
-    public int id;
-    public String nombre;
-    public double precio;
-    public int stock;
+    // Atributos privados (encapsulamiento correcto)
+    private int id;
+    private String nombre;
+    private double precio;
+    private int cantidad;
 
-    // ERROR 2: Constructor sin validaciones
-    public Producto(int id, String nombre, double precio, int stock) {
+    // Constructor
+    public Producto(int id, String nombre, double precio, int cantidad) {
         this.id = id;
         this.nombre = nombre;
         this.precio = precio;
-        this.stock = stock; // No valida si el stock es negativo
+        this.cantidad = cantidad;
     }
 
-    // ERROR 3: Método que permite stock negativo
-    public void reducirStock(int cantidad) {
-        this.stock = this.stock - cantidad; // No verifica si hay suficiente stock
+    // Métodos getters (accesores)
+    public int getId() {
+        return id;
     }
 
-    // ERROR 4: Método con lógica incorrecta
-    public boolean hayStock(int cantidad) {
-        return stock > cantidad; // Debería ser >= para permitir exactamente la cantidad
+    public String getNombre() {
+        return nombre;
     }
 
+    public double getPrecio() {
+        return precio;
+    }
+
+    public int getCantidad() {
+        return cantidad;
+    }
+
+    // Métodos setters (modificadores)
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public void setPrecio(double precio) {
+        this.precio = precio;
+    }
+
+    public void setCantidad(int cantidad) {
+        this.cantidad = cantidad;
+    }
+
+    // Método de negocio
+    public boolean hayStock(int cantidadSolicitada) {
+        return this.cantidad >= cantidadSolicitada;
+    }
+
+    // Método toString mejorado
     @Override
     public String toString() {
-        return "Producto{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", precio=" + precio +
-                ", stock=" + stock +
-                '}';
+        return String.format("Producto [ID: %d, Nombre: %s, Precio: Q%,.2f, Cantidad: %d]",
+                id, nombre, precio, cantidad);
     }
 }
+

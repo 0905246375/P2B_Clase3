@@ -3,6 +3,7 @@ package com.negocio.services;
 import com.negocio.models.Producto;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class InventarioService {
     private List<Producto> productos;
@@ -21,12 +22,10 @@ public class InventarioService {
 
     // ERROR 8: Bucle infinito potencial
     public Producto buscarProductoPorId(int id) {
-        int i = 0;
-        while (i <= productos.size()) { // Debería ser < en lugar de <=
-            if (productos.get(i).id == id) {
-                return productos.get(i);
+        for (Producto producto : productos) {
+            if (producto.getId() == id) {
+                return producto;
             }
-            i++;
         }
         return null;
     }
@@ -36,7 +35,8 @@ public class InventarioService {
         Producto producto = buscarProductoPorId(id);
         if (producto != null && producto.hayStock(cantidad)) {
             // No reduce el stock - ERROR LÓGICO
-            System.out.println("Venta realizada: " + producto.nombre);
+
+            System.out.println("Venta realizada: " + producto.getNombre());
             return true;
         }
         return false;
@@ -46,12 +46,46 @@ public class InventarioService {
     public List<Producto> obtenerProductosDisponibles() {
         List<Producto> disponibles = new ArrayList<>();
         for (Producto producto : productos) {
-            if (producto.stock >= 0) { // Debería ser > 0
+            if (producto.getCantidad() >= 0) {
                 disponibles.add(producto);
             }
         }
         return disponibles;
     }
+
+    public void ResumenInventario(){
+        System.out.println("inventario");
+        for(Producto producto : productos);
+        System.out.println("ID:" +producto.getId);
+        "nombre: "+ producto.nombre()+
+                "precio Q "+ producto.getPrecio()+
+                "stock: "+ producto.Stock()+
+    }
+    public boolean eliminarProductoPorId(int id) {
+        Scanner scanner = new Scanner(System.in);  // Añadido para pedir confirmación
+
+        for (Producto producto : productos) {
+            if (producto.getId() == id) {
+                System.out.println("¿Está seguro que desea eliminar el producto \"" + producto.getNombre() + "\"? (s/n): ");
+                String confirmacion = scanner.nextLine();
+
+                if (confirmacion.equalsIgnoreCase("s")) {
+                    productos.remove(producto);
+                    System.out.println("Producto eliminado correctamente.");
+                    return true;
+                } else {
+                    System.out.println("Eliminación cancelada.");
+                    return false;
+                }
+            }
+        }
+        System.out.println("No se encontró el producto con ID: " + id);
+        return false;
+    }
+
+
+
+
 
     public List<Producto> obtenerTodosLosProductos() {
         return productos;

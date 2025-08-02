@@ -10,6 +10,7 @@ public class Pedido {
     private List<Producto> productos;
     private LocalDateTime fecha;
     private double total;
+    private double descuento;
 
     public Pedido(int id, Cliente cliente) {
         this.id = id;
@@ -17,6 +18,7 @@ public class Pedido {
         this.productos = new ArrayList<>();
         this.fecha = LocalDateTime.now();
         this.total = 0.0;
+        this.descuento = 0.0;
     }
 
     public void agregarProducto(Producto producto) {
@@ -24,23 +26,29 @@ public class Pedido {
         calcularTotal();
     }
 
-    // ERROR 5: Cálculo incorrecto del total (suma precios sin considerar cantidades)
     private void calcularTotal() {
         total = 0;
         for (Producto producto : productos) {
-            total += producto.precio; // Suma solo el precio, no considera cantidad
+            total += producto.getPrecio() * producto.getCantidad(); // Usar getters
+        }
+        if (descuento > 0) {
+            total = total - (total * descuento / 100);
         }
     }
 
-    // ERROR 6: Método que puede causar IndexOutOfBoundsException
     public Producto obtenerPrimerProducto() {
-        return productos.get(0); // No verifica si la lista está vacía
+        if (productos.isEmpty()) {
+            return null;
+        }
+        return productos.get(0);
     }
 
-    // ERROR 7: Descuento mal aplicado
-    public double aplicarDescuento(double porcentaje) {
-        // Aplica el descuento sumándolo en lugar de restándolo
-        return total + (total * porcentaje / 100);
+    public void aplicarDescuento(double porcentaje) {
+        if (porcentaje < 0 || porcentaje > 100) {
+            throw new IllegalArgumentException("Porcentaje de descuento inválido");
+        }
+        this.descuento = porcentaje;
+        calcularTotal();
     }
 
     // Getters
@@ -49,6 +57,7 @@ public class Pedido {
     public List<Producto> getProductos() { return productos; }
     public LocalDateTime getFecha() { return fecha; }
     public double getTotal() { return total; }
+    public double getDescuento() { return descuento; }
 
     @Override
     public String toString() {
@@ -57,7 +66,13 @@ public class Pedido {
                 ", cliente=" + cliente.getNombre() +
                 ", productos=" + productos.size() +
                 ", fecha=" + fecha +
-                ", total=" + total +
+                ", total=" + formatoGTQ(total) +
+                ", descuento=" + descuento + "%" +
                 '}';
     }
+
+    public String formatoGTQ(double monto) {
+        return String.format("Q%,.2f", monto);
+    }
 }
+
